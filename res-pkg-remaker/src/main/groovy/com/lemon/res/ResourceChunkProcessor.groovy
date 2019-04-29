@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.seiginonakama.res
+package com.lemon.res
 
 import pink.madis.apk.arsc.*
 
@@ -29,10 +29,10 @@ import java.nio.ByteOrder
  * author: zhoulei date: 2017/6/2.
  */
 public class ResourceChunkProcessor {
-    private final int customPackageId;
+    private final int customPackageId
 
     public ResourceChunkProcessor(int pkgId) {
-        customPackageId = pkgId;
+        customPackageId = pkgId
     }
 
     public void processChunkFiles(File chunkRoot) {
@@ -54,10 +54,10 @@ public class ResourceChunkProcessor {
                 ResourceTableChunk tableChunk = chunk;
                 Map<Integer, Chunk> chunkMap = tableChunk.chunks
                 for (Map.Entry<Integer, Chunk> entry : chunkMap) {
-                    Chunk c = entry.getValue();
+                    Chunk c = entry.getValue()
 
                     if (c instanceof PackageChunk && c.id == 0x7f) {
-                        PackageChunk packageChunk = c;
+                        PackageChunk packageChunk = c
 
                         //只处理App PackageChunk
                         byte[] libraryChunkBytes = createLibraryChunk(packageChunk.packageName).toByteArray()
@@ -156,7 +156,7 @@ public class ResourceChunkProcessor {
         if (resourceValue == null) {
             return null;
         }
-        ResourceValue.Type type = resourceValue.type();
+        ResourceValue.Type type = resourceValue.type()
         if (type == ResourceValue.Type.REFERENCE || type == ResourceValue.Type.ATTRIBUTE
                 || type == ResourceValue.Type.DYNAMIC_REFERENCE) {
             if (isAppPackage(resourceValue.data())) {

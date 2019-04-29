@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.seiginonakama.res;
+package com.lemon.res;
 
 import java.util.regex.Matcher
 import java.util.regex.Pattern;
@@ -25,15 +25,16 @@ import java.util.regex.Pattern;
  */
 public class GenerateRProcessor {
     private static final Pattern RID_0x7f = Pattern.compile("0x7f[0-9a-fA-F]{6}")
-    private final int customPackageId;
+    private final int customPackageId
 
     public GenerateRProcessor(int pkgId) {
         customPackageId = pkgId;
     }
 
     public void process(File file) {
+        println("R file path : " + file.getPath())
         File newFile = new File(file.absolutePath + '.tmp')
-        BufferedWriter writer = newFile.newWriter(false);
+        BufferedWriter writer = newFile.newWriter(false)
         List<String> lines = file.readLines();
         for (String line : lines) {
             Matcher matcher = RID_0x7f.matcher(line)

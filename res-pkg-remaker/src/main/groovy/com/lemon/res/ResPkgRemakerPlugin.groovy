@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.seiginonakama.res
+package com.lemon.res
 
+import com.android.build.gradle.AppExtension
+import com.android.build.gradle.tasks.AndroidJavaCompile
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskOutputs
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.compile.JavaCompile
 import org.zeroturnaround.zip.ZipUtil
 import org.zeroturnaround.zip.commons.FileUtils
@@ -43,8 +46,10 @@ class ResPkgRemakerPlugin implements Plugin<Project> {
                 GenerateRProcessor generateRProcessor = new GenerateRProcessor(customPackageId)
                 ResourceChunkProcessor resourceChunkProcessor = new ResourceChunkProcessor(customPackageId)
 
-                project.android.applicationVariants.each { variant ->
-                    String fullName = variant.getName().capitalize();
+                AppExtension appExtension = project.getExtensions().getByType(AppExtension.class)
+
+                appExtension.applicationVariants.each { variant ->
+                    String fullName = variant.getName().capitalize()
 
                     Task processAndroidResourceTask = project.tasks.findByName("process${fullName}Resources")
                     Task generateSourcesTask = project.tasks.findByName("generate${fullName}Sources")
@@ -53,27 +58,31 @@ class ResPkgRemakerPlugin implements Plugin<Project> {
                     customResourceTask.dependsOn(processAndroidResourceTask)
                     generateSourcesTask.dependsOn(customResourceTask)
 
-                    Set<File> resourceOutputFiles = new HashSet<>();
+                    Set<File> resourceOutputFiles = new HashSet<>()
                     customResourceTask.doLast {
                         TaskOutputs taskOutputs = processAndroidResourceTask.getOutputs()
-                        resourceOutputFiles = taskOutputs.files.files;
-                        if (output.isDirectory()) {
-                            output.eachFileRecurse {
-                                file ->
-                                    if (file.isFile() && file.absolutePath.endsWith("ap_")) {
-                                        processOutput(resourceChunkProcessor, file);
-                                    }
-                            }
-                        }else{
-                            if (output.isFile() && output.absolutePath.endsWith("ap_")) {
-                                processOutput(resourceChunkProcessor, output);
+                        resourceOutputFiles = taskOutputs.files.files
+                        for (File output : resourceOutputFiles) {
+                            if (output.isDirectory()) {
+                                output.eachFileRecurse {
+                                    file ->
+                                        if (file.isFile() && file.absolutePath.endsWith("ap_")) {
+                                            processOutput(resourceChunkProcessor, file)
+                                        }
+                                }
+                            } else {
+                                if (output.isFile() && output.absolutePath.endsWith("ap_")) {
+                                    processOutput(resourceChunkProcessor, output)
+                                }
                             }
                         }
                     }
 
-                    JavaCompile javaCompile = variant.getJavaCompile()
+                    TaskProvider<JavaCompile> taskProvider = variant.getJavaCompileProvider()
+                    AndroidJavaCompile javaCompile = taskProvider.get()
                     javaCompile.doFirst {
-                        for (File f : javaCompile.source.files) {
+
+                        for (File f : javaCompile.sources.files) {
                             if (f.isFile()) {
                                 if (f.name == 'R.java') {
                                     generateRProcessor.process(f)
@@ -95,6 +104,10 @@ class ResPkgRemakerPlugin implements Plugin<Project> {
                                             generateRProcessor.process(file)
                                         }
                                 }
+                            } else if (f.isFile()) {
+                                if (f.name == 'R.txt') {
+                                    generateRProcessor.process(f)
+                                }
                             }
                         }
                     }
@@ -104,7 +117,7 @@ class ResPkgRemakerPlugin implements Plugin<Project> {
     }
 
     private static void processOutput(ResourceChunkProcessor processor, File apk) {
-        File workPath = new File(apk.getParent(), "remake-res-package-tmp");
+        File workPath = new File(apk.getParent(), "remake-res-package-tmp")
         ZipUtil.unpack(apk, workPath)
         processor.processChunkFiles(workPath)
         apk.delete()

@@ -12,81 +12,54 @@ dependencies {
     compile localGroovy()
     compile 'pink.madis.apk.arsc:android-chunk-utils:0.0.7'
     compile 'org.zeroturnaround:zt-zip:1.9'
+    compile 'com.android.tools.build:gradle:3.4.1'
+}
+
+def deleteLastJar() {
+    def tree = fileTree('output_libs')
+    tree.include '*.jar'
+    tree.each {
+        println("file : " + it.getName())
+        it.delete()
+    }
+}
+
+
+project.afterEvaluate {
+    deleteLastJar()
+    copy {
+        from("build/libs")
+        into("output_libs")
+    }
 }
 
 targetCompatibility = JavaVersion.VERSION_1_7
 sourceCompatibility = JavaVersion.VERSION_1_7
 
-version = "0.8.0"
-group = "com.seiginonakama"
+group 'com.lemon'
+version '0.1.1'
 
-def siteUrl = 'https://github.com/seiginonakama/res-pkg-remaker'    // project homepage
-def gitUrl = 'https://github.com/seiginonakama/res-pkg-remaker.git' // project git
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'res-pkg-remaker' //bintray上的项目名
 
-install {
-    repositories.mavenInstaller {
-        // This generates POM.xml with proper parameters
-        pom {
-            project {
-                name 'res-pkg-remaker'
-                url siteUrl
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers {
-                    developer {
-                        id 'lqcandqq13'
-                        name 'lqcandqq13'
-                        email 'lqcandqq13@gmail.com'
-                    }
-                }
-                scm {
-                    connection gitUrl
-                    developerConnection gitUrl
-                    url siteUrl
-                }
-            }
-        }
-    }
+    publishedGroupId = group
+    artifact = 'res-pkg-remaker'
+    libraryVersion = version
+
+    siteUrl = 'https://github.com/llxdaxia/respkgremaker'
+    gitUrl = 'https://github.com/llxdaxia/respkgremaker.git'
+
+    libraryName = 'res-pkg-remaker' //项目名字，没什么用
+    libraryDescription = 'res-pkg-remaker' //项目描述，没什么用
+
+    developerId = 'Lemon'
+    developerName = 'Lemon'
+    developerEmail = 'daxiallx@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
 }
 
-def I = File.separator
-
-task sourcesJar(type: Jar) {
-    from new File(project.getProjectDir(), "src${I}main${I}groovy")
-    classifier = 'sources'
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-Properties properties = new Properties()
-boolean isHasFile = false
-if (project.rootProject.file('local.properties') != null){
-    isHasFile = true
-    properties.load(project.rootProject.file('local.properties').newDataInputStream())
-}
-
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
-
-bintray {
-    user = isHasFile ? properties.getProperty("bintray.user") : System.getenv("bintray.user")
-    key = isHasFile ? properties.getProperty("bintray.apikey") : System.getenv("bintray.apikey")
-    configurations = ['archives']
-    pkg {
-        repo = "maven"
-        name = "res-pkg-remaker"
-        websiteUrl = siteUrl
-        vcsUrl = gitUrl
-        licenses = ["Apache-2.0"]
-        publish = true
-    }
-}
+apply from: 'https://raw.githubusercontent.com/llxdaxia/GradleScript/master/bintray_v1.gradle'

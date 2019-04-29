@@ -13,31 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.seiginonakama.res;
+package com.lemon.res;
 
 /**
  * author: zhoulei date: 2017/6/2.
  */
 public class ResPkgRemakerExtension {
-    private boolean enable = true;
-    private int packageId = 0x7f;
+    private boolean enable = true
+    private int packageId = 0x7f
 
     public int getPackageId() {
-        return packageId;
+        return packageId
     }
 
     public void setPackageId(int id) {
-        if(id < 0x02 || id > 0x7f) {
-            throw new IllegalArgumentException("custom package id only can be > 0x01 and <= 0.7f")
+        if(id < 0x02 || id >= 0x7f) {
+            throw new IllegalArgumentException("custom package id only can be > 0x01 and < 0x7f")
         }
-        packageId = id;
+        packageId = id
     }
 
     public void setEnable(boolean b) {
-        enable = b;
+        enable = b
     }
 
     public boolean isEnable() {
-        return enable && packageId != 0x7f;
+        return enable && packageId != 0x7f
     }
 }
